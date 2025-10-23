@@ -227,12 +227,6 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
           if (argv.yolo && argv['approvalMode']) {
             return 'Cannot use both --yolo (-y) and --approval-mode together. Use --approval-mode=yolo instead.';
           }
-          if (
-            argv.temperature !== undefined &&
-            (argv.temperature < 0 || argv.temperature > 2)
-          ) {
-            return 'Temperature must be between 0 and 2';
-          }
           return true;
         }),
     )
@@ -588,6 +582,11 @@ export async function loadCliConfig(
 
   const ptyInfo = await getPty();
 
+  const temperature = argv.temperature ?? settings.model?.temperature;
+  if (temperature !== undefined && (temperature < 0 || temperature > 2)) {
+    throw new FatalConfigError('Temperature must be between 0 and 2');
+  }
+
   return new Config({
     sessionId,
     embeddingModel: DEFAULT_GEMINI_EMBEDDING_MODEL,
@@ -630,7 +629,7 @@ export async function loadCliConfig(
     fileDiscoveryService: fileService,
     bugCommand: settings.advanced?.bugCommand,
     model: resolvedModel,
-    temperature: argv.temperature ?? settings.model?.temperature,
+    temperature,
     maxSessionTurns: settings.model?.maxSessionTurns ?? -1,
     experimentalZedIntegration: argv.experimentalAcp || false,
     listExtensions: argv.listExtensions || false,
