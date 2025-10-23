@@ -229,9 +229,9 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
           }
           if (
             argv.temperature !== undefined &&
-            (argv.temperature < 0 || argv.temperature > 1)
+            (argv.temperature < 0 || argv.temperature > 2)
           ) {
-            return 'Temperature must be between 0 and 1';
+            return 'Temperature must be between 0 and 2';
           }
           return true;
         }),
