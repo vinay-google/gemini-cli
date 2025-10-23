@@ -51,6 +51,7 @@ import { createPolicyEngineConfig } from './policy.js';
 export interface CliArgs {
   query: string | undefined;
   model: string | undefined;
+  temperature: number | undefined;
   sandbox: boolean | string | undefined;
   debug: boolean | undefined;
   prompt: string | undefined;
@@ -96,6 +97,12 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
           type: 'string',
           nargs: 1,
           description: `Model`,
+        })
+        .option('temperature', {
+          alias: 't',
+          type: 'number',
+          nargs: 1,
+          description: 'Temperature',
         })
         .option('prompt', {
           alias: 'p',
@@ -219,6 +226,12 @@ export async function parseArguments(settings: Settings): Promise<CliArgs> {
           }
           if (argv.yolo && argv['approvalMode']) {
             return 'Cannot use both --yolo (-y) and --approval-mode together. Use --approval-mode=yolo instead.';
+          }
+          if (
+            argv.temperature !== undefined &&
+            (argv.temperature < 0 || argv.temperature > 1)
+          ) {
+            return 'Temperature must be between 0 and 1';
           }
           return true;
         }),
@@ -601,6 +614,7 @@ export async function loadCliConfig(
     fileDiscoveryService: fileService,
     bugCommand: settings.advanced?.bugCommand,
     model: resolvedModel,
+    temperature: argv.temperature ?? settings.model?.temperature,
     maxSessionTurns: settings.model?.maxSessionTurns ?? -1,
     experimentalZedIntegration: argv.experimentalAcp || false,
     listExtensions: argv.listExtensions || false,
